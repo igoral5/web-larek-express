@@ -325,7 +325,9 @@ const openapi = {
           image: { $ref: '#/components/schemas/Image' },
           category: { type: 'string', example: 'софт-скил' },
           description: { type: 'string', example: 'Будет стоять над душой и не давать прокрастинировать.' },
-          price: { type: 'number', nullable: true, example: 750 },
+          price: {
+            type: 'number', nullable: true, minimum: 0, example: 750,
+          },
         },
       },
       ProductInput: {
@@ -339,7 +341,7 @@ const openapi = {
           category: { type: 'string', example: 'софт-скил' },
           description: { type: 'string', example: 'Будет стоять над душой и не давать прокрастинировать.' },
           price: {
-            type: 'number', nullable: true, default: null, example: 750,
+            type: 'number', nullable: true, minimum: 0, default: null, example: 750,
           },
         },
       },
@@ -350,7 +352,9 @@ const openapi = {
           image: { $ref: '#/components/schemas/Image' },
           category: { type: 'string' },
           description: { type: 'string' },
-          price: { type: 'number', nullable: true },
+          price: {
+            type: 'number', nullable: true, minimum: 0,
+          },
         },
       },
       ProductList: {

@@ -30,6 +30,15 @@ const createTokens = (userId: string) => ({
   refreshToken: jwt.sign({ _id: userId }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY }),
 });
 
+const MAX_REFRESH_TOKENS = 5;
+
+const addRefreshToken = (tokens: { token: string }[], refreshToken: string) => {
+  tokens.push({ token: refreshToken });
+  if (tokens.length > MAX_REFRESH_TOKENS) {
+    tokens.splice(0, tokens.length - MAX_REFRESH_TOKENS);
+  }
+};
+
 const getUserId = (refreshToken: string | undefined) => {
   try {
     const { _id } = jwt.verify(refreshToken as string, JWT_SECRET) as { _id: string };
@@ -57,7 +66,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     }
 
     const tokens = createTokens(user._id.toString());
-    user.tokens.push({ token: tokens.refreshToken });
+    addRefreshToken(user.tokens, tokens.refreshToken);
     await user.save();
 
     res
@@ -73,7 +82,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const { name, email, password } = req.body;
     const user = await User.create({ name, email, password: await bcrypt.hash(password, 10) });
     const tokens = createTokens(user._id.toString());
-    user.tokens.push({ token: tokens.refreshToken });
+    addRefreshToken(user.tokens, tokens.refreshToken);
     await user.save();
 
     res
@@ -105,7 +114,7 @@ export const refreshAccessToken = async (req: Request, res: Response, next: Next
 
     const tokens = createTokens(userId);
     user.tokens = user.tokens.filter(({ token }) => token !== refreshToken);
-    user.tokens.push({ token: tokens.refreshToken });
+    addRefreshToken(user.tokens, tokens.refreshToken);
     await user.save();
 
     res

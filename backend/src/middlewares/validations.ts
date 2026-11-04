@@ -15,7 +15,7 @@ export const createProductValidation = celebrate({
     image: imageSchema.required(),
     category: Joi.string().required(),
     description: Joi.string().allow(''),
-    price: Joi.number().allow(null),
+    price: Joi.number().min(0).allow(null),
   }),
 });
 
@@ -26,7 +26,7 @@ export const updateProductValidation = celebrate({
     image: imageSchema,
     category: Joi.string(),
     description: Joi.string().allow(''),
-    price: Joi.number().allow(null),
+    price: Joi.number().min(0).allow(null),
   }),
 });
 
