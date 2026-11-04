@@ -1,4 +1,7 @@
+import path from 'path';
+import fs from 'fs';
 import mongoose from 'mongoose';
+import { PUBLIC_PATH, UPLOAD_PATH } from '../config';
 
 export interface IImage {
   fileName: string;
@@ -51,5 +54,12 @@ const productSchema = new mongoose.Schema<IProduct>({
     default: null,
   },
 }, { versionKey: false });
+
+productSchema.post('findOneAndDelete', (doc: IProduct | null) => {
+  if (doc?.image?.fileName) {
+    const filePath = path.join(PUBLIC_PATH, UPLOAD_PATH, path.basename(doc.image.fileName));
+    fs.unlink(filePath, () => undefined);
+  }
+});
 
 export default mongoose.model<IProduct>('product', productSchema);

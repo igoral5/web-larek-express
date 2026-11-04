@@ -1,14 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import { isCelebrateError } from 'celebrate';
+import multer from 'multer';
 import { Error as MongooseError } from 'mongoose';
 import BadRequestError from '../errors/bad-request-error';
 import ConflictError from '../errors/conflict-error';
 import NotFoundError from '../errors/not-found-error';
+import UnauthorizedError from '../errors/unauthorized-error';
 
-const isHttpError = (error: unknown): error is BadRequestError | ConflictError | NotFoundError => (
+const isHttpError = (
+  error: unknown,
+): error is BadRequestError | ConflictError | NotFoundError | UnauthorizedError => (
   error instanceof BadRequestError
   || error instanceof ConflictError
   || error instanceof NotFoundError
+  || error instanceof UnauthorizedError
 );
 
 export const notFoundHandler = (_req: Request, _res: Response, next: NextFunction) => {
@@ -23,6 +28,13 @@ export const errorHandler = (err: unknown, _req: Request, res: Response, _next: 
 
   if (err instanceof MongooseError.ValidationError || err instanceof MongooseError.CastError) {
     res.status(400).send({ message: err.message });
+    return;
+  }
+
+  if (err instanceof multer.MulterError) {
+    res.status(400).send({
+      message: err.code === 'LIMIT_FILE_SIZE' ? 'Размер файла превышает 5 МБ' : err.message,
+    });
     return;
   }
 
